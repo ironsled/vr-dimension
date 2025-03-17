@@ -1,2 +1,3 @@
-WHAT IS VR DIMENSION? AN APPLICATION TO CAPTURE VR DISPLAY FOR VIRTUAL DESKTOP USERS WITHOUT THE NEED TO CAST FROM HEADSET TO STREAM SINGLE VIEW. 
-WHY WAS THIS CREATED? I COULD NOT FIND A SOLUTION THAT WAS SATISFACTORY TO USE PREFERRED CODEC OPTIONS WITHOUT TASKING THE VR HEADSET. VR DIMENSION WAS A PROOF OF CONCEPT, FROM IDEA TO REALITY.
+VR Dimension is a software application designed for Virtual Desktop users to capture single
+eye VR display output without requiring headset casting. This facilitates a streamlined VR 
+streaming experience while minimizing the processing load on the VR headset. 
