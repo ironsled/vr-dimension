@@ -70,17 +70,17 @@ def process_video():
                     right_eye = frame[:, width // 2:]
                     eye_height, eye_width = right_eye.shape[:2]
 
-                    crop_x = int(eye_width * 0.09)
+                    crop_x = int(eye_width * 0.25)
                     crop_y_top = int(eye_height * 0.12)
-                    crop_y_bottom = int(eye_height * 0.08)
+                    crop_y_bottom = int(eye_height * 0.10)
                     cropped_eye = right_eye[crop_y_top:eye_height - crop_y_bottom, crop_x:eye_width - crop_x]
 
                     # Resize to 720x720 resolution
-                    resized_eye = cv2.resize(cropped_eye, (720, 720), interpolation=cv2.INTER_AREA)
+                    resized_eye = cv2.resize(cropped_eye, (560, 540), interpolation=cv2.INTER_AREA)
                     
                     # Create and update the window
                     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-                    cv2.resizeWindow(window_name, 720, 720)
+                    cv2.resizeWindow(window_name, 560, 540)
                     cv2.imshow(window_name, resized_eye)
                     
                     # Add a small delay to allow the window to refresh
