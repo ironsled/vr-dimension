@@ -31,9 +31,17 @@ selected_window = None
 exit_flag = False
 capture_flag = False
 config = DEFAULT_CONFIG.copy()
-window_title = "VR Dimension ~Sixx"
+window_title = "VR Dimension"
 video_thread = None  # Declare video_thread globally
 status_label = None
+
+# Define status colors
+STATUS_COLORS = {
+    "ready": "#FFCC00",    # Yellow for ready
+    "capturing": "#00CC00", # Green for capturing
+    "stopped": "#FF0000",   # Red for stopped
+    "error": "#FF6600"      # Orange for errors
+}
 
 # Logging setup
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -152,7 +160,7 @@ def process_video():
                     if not windows:
                         logging.warning(f"Window '{selected_window}' not found. Stopping capture.")
                         capture_flag = False
-                        status_label.config(text="Status: Window Not Found")
+                        update_status("error", "Status: Window Not Found")
                         continue
 
                     window = windows[0]
@@ -180,27 +188,34 @@ def process_video():
 
                 except Exception as e:
                     logging.error(f"Exception in video processing loop: {e}")
+                    update_status("error", f"Status: Error - {str(e)[:50]}")
                     time.sleep(1)
             else:
                 cv2.waitKey(100)
     cv2.destroyAllWindows()
     logging.info("Video processing thread stopped.")
 
+def update_status(status_type, message):
+    """Update status label with color coding."""
+    if status_label:
+        status_label.config(text=message, foreground="#FFFFFF", background=STATUS_COLORS.get(status_type, "#333333"))
+
 def select_window_callback(event):
     """Callback for window selection from Combobox."""
     global selected_window
     selected_window = window_var.get()
     logging.info(f"Selected window: {selected_window}")
+    update_status("ready", f"Status: Ready - {selected_window} selected")
 
 def start_capture_callback():
     """Callback for Start Capture button."""
     global capture_flag, video_thread
     if not selected_window:
         logging.warning("No window selected. Cannot start capture.")
-        status_label.config(text="Status: No Window Selected")
+        update_status("error", "Status: No Window Selected")
         return
     capture_flag = True
-    status_label.config(text="Status: Capturing")
+    update_status("capturing", "Status: Capturing")
     logging.info("Capture started.")
     if video_thread is None or not video_thread.is_alive():
         video_thread = threading.Thread(target=process_video, daemon=True)
@@ -210,7 +225,7 @@ def stop_capture_callback():
     """Callback for Stop Capture button."""
     global capture_flag
     capture_flag = False
-    status_label.config(text="Status: Stopped")
+    update_status("stopped", "Status: Stopped")
     logging.info("Capture stopped.")
 
 def refresh_windows_callback():
@@ -222,6 +237,7 @@ def refresh_windows_callback():
     if msf_window:
         window_var.set(msf_window)
         selected_window = msf_window  # Set selected_window here
+        update_status("ready", f"Status: Ready - {selected_window} selected")
     logging.info("Window list refreshed.")
 
 def update_resolution_callback(event):
@@ -255,15 +271,15 @@ def on_closing_callback():
     save_config()
     logging.info("Application closing...")
     if video_thread and video_thread.is_alive():
-        video_thread.join()  # Wait for the video thread to finish
+        video_thread.join(timeout=1.0)  # Wait for the video thread to finish with timeout
     root.destroy()
 
 def open_about_popup():
     """Opens an About popup window."""
     about_window = tk.Toplevel(root)
-    about_window.title("About VR Dimension ~Sixx")
+    about_window.title("About VR Dimension")
 
-    about_label = Label(about_window, text="VR Dimension Version 1.3\n\nDeveloped by: [Sixx/X Technologies llc]\n", justify=tk.LEFT)
+    about_label = Label(about_window, text="VR Dimension Version 1.4\n\nDeveloped by: [Sixx/X Technologies llc]\n", justify=tk.LEFT)
     about_label.pack()
 
     discord_label = Label(about_window, text="Discord: ", justify=tk.LEFT)
@@ -278,7 +294,7 @@ def open_about_popup():
     twitch_link.pack()
     twitch_link.bind("<Button-1>", lambda e: webbrowser.open("https://www.twitch.tv/survivewithsixx"))
 
-    thanks_label = Label(about_window, text="\nSpecial thanks to CowbellCody for BETA testing.\n\nShout out to Syd Tony & The SydSquadron Flight Sim Community", justify=tk.CENTER)
+    thanks_label = Label(about_window, text="\nSpecial thanks to CowbellCody for BETA testing\n\nShout out to Syd Tony & The SydSquadron Flight Sim Community", justify=tk.CENTER)
     thanks_label.pack()
 
 def show_antivirus_warning():
@@ -327,16 +343,16 @@ frame_slider.set(config["frame_rate"])
 frame_slider.grid(row=2, column=1, padx=5, pady=5)
 
 # Brightness slider
-ttk.Label(control_frame, text="Brightness:").grid(row=3, column=0, padx=5, pady=5, sticky="w")
-brightness_slider = Scale(control_frame, from_=0.0, to=2.0, resolution=0.1, orient=HORIZONTAL, command=update_brightness_callback)
-brightness_slider.set(config["brightness"])
-brightness_slider.grid(row=3, column=1, padx=5, pady=5)
+# ttk.Label(control_frame, text="Brightness:").grid(row=3, column=0, padx=5, pady=5, sticky="w")
+# brightness_slider = Scale(control_frame, from_=0.0, to=2.0, resolution=0.1, orient=HORIZONTAL, command=update_brightness_callback)
+# brightness_slider.set(config["brightness"])
+# brightness_slider.grid(row=3, column=1, padx=5, pady=5)
 
 # Contrast slider
-ttk.Label(control_frame, text="Contrast:").grid(row=4, column=0, padx=5, pady=5, sticky="w")
-contrast_slider = Scale(control_frame, from_=0.0, to=2.0, resolution=0.1, orient=HORIZONTAL, command=update_contrast_callback)
-contrast_slider.set(config["contrast"])
-contrast_slider.grid(row=4, column=1, padx=5, pady=5)
+# ttk.Label(control_frame, text="Contrast:").grid(row=4, column=0, padx=5, pady=5, sticky="w")
+# contrast_slider = Scale(control_frame, from_=0.0, to=2.0, resolution=0.1, orient=HORIZONTAL, command=update_contrast_callback)
+# contrast_slider.set(config["contrast"])
+# contrast_slider.grid(row=4, column=1, padx=5, pady=5)
 
 # Add buttons in a more organized way
 button_frame = ttk.Frame(main_frame)
@@ -345,14 +361,15 @@ button_frame.pack(pady=5)
 ttk.Button(button_frame, text="Refresh", command=refresh_windows_callback).grid(row=0, column=0, padx=5, pady=5)
 ttk.Button(button_frame, text="Start Capture", command=start_capture_callback).grid(row=0, column=1, padx=5, pady=5)
 ttk.Button(button_frame, text="Stop Capture", command=stop_capture_callback).grid(row=0, column=2, padx=5, pady=5)
-ttk.Button(button_frame, text="Buy Sixx Coffee", command=open_coffee_link).grid(row=0, column=3, padx=5, pady=5) # Moved
+ttk.Button(button_frame, text="Buy Sixx Coffee", command=open_coffee_link).grid(row=0, column=3, padx=5, pady=5)
 ttk.Button(button_frame, text="AV Info", command=show_antivirus_warning).grid(row=0, column=4, padx=5, pady=5)
-ttk.Button(button_frame, text="About", command=open_about_popup).grid(row=0, column=5, padx=5, pady=5) # Moved
+ttk.Button(button_frame, text="About", command=open_about_popup).grid(row=0, column=5, padx=5, pady=5)
 
-# Status indicator
+# Status indicator - now using a custom Label with background color support
 status_frame = ttk.Frame(main_frame)
 status_frame.pack(pady=5)
-status_label = ttk.Label(status_frame, text="Status: Ready")
+status_label = Label(status_frame, text="Status: Ready", background=STATUS_COLORS["ready"], foreground="#FFFFFF", 
+                    font=("Arial", 10, "bold"), width=50, pady=5)
 status_label.pack()
 
 # Instructions
@@ -367,7 +384,6 @@ instructions = [
     "STEP 3: START VR MODE IN SIMULATOR",
     "STEP 4: SELECT GAME IN PROCESS DROP DOWN, PRESS REFRESH BUTTON, PRESS START CAPTURE BUTTON",
     "CLICK X IN GUI TO EXIT APP"
-
 ]
 
 for i, instruction in enumerate(instructions):
@@ -376,7 +392,8 @@ for i, instruction in enumerate(instructions):
 # Initialize window list
 refresh_windows_callback()
 
-video_thread = threading.Thread(target=process_video, daemon=True) #moved here
-video_thread.start() #moved here
+# Start video processing thread
+video_thread = threading.Thread(target=process_video, daemon=True)
+video_thread.start()
 
 root.mainloop()
